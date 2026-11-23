@@ -1251,10 +1251,15 @@ body.in-story .ap { display: flex; }
 body.in-story .hero { min-height: 100svh; box-sizing: border-box; align-content: center; padding-top: 6rem; padding-bottom: 5rem; }
 body.in-story .hero .question { width: 100%; }
 @media (max-width: 899px) { body.in-story .hero { padding: 6rem 1.25rem 4rem; } body.in-story .hero .question p.q { font-size: clamp(2rem, 9vw, 2.8rem); } }
+
+.ap .ap-mode { color: #b3b3b3; padding: .6rem .8rem; }
+.ap .ap-mode[aria-pressed="true"] { color: #fff; box-shadow: 0 0 0 1.5px #01a2ff, 0 6px 16px rgba(0,0,0,.3); }
+.ap.on .ap-mode, .ap.on .ap-len { display: none; }
+@media (max-width: 899px) { .ap { flex-wrap: wrap; justify-content: flex-end; max-width: 80vw; } .ap .ap-mode { padding: .5rem .7rem; font-size: .75rem; } }
 </style>
 </head>
 <body>
-<div class="ap" id="ap" role="group" aria-label="Auto-play"><button type="button" class="ap-go" id="apGo" aria-keyshortcuts="P" aria-label="Start auto-play"><svg class="i-play" viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M4 2.5v11l9-5.5z"/></svg><svg class="i-pause" viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M4 2.5h3v11H4zM9 2.5h3v11H9z"/></svg><span class="ap-l" id="apL">Auto-play</span></button><button type="button" class="ap-len" id="apLen" aria-label="Change length">5 min</button></div>
+<div class="ap" id="ap" role="group" aria-label="Auto-play"><button type="button" class="ap-go" id="apGo" aria-keyshortcuts="P" aria-label="Start auto-play"><svg class="i-play" viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M4 2.5v11l9-5.5z"/></svg><svg class="i-pause" viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M4 2.5h3v11H4zM9 2.5h3v11H9z"/></svg><span class="ap-l" id="apL">Auto-play</span></button><button type="button" class="ap-len" id="apLen" aria-label="Change length">5 min</button><button type="button" class="ap-mode" id="apMode" aria-pressed="false" aria-keyshortcuts="V" title="Presentation mode: a shorter route through the story (V)">Presentation</button></div>
 <div class="mnav" id="mnav"><button type="button" id="mPrev" aria-label="Previous step"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3 5 8l5 5"/></svg></button><button type="button" id="mNext" aria-label="Next step"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg></button></div>
 <div id="pv" role="dialog" aria-modal="true" aria-label="INQUEST prototype"><div class="pv-bar"><span></span><button class="pv-x" type="button" id="pv-x">Close</button></div><div class="pv-st" id="pv-st"></div></div>
 <div id="home">
@@ -1311,6 +1316,7 @@ body.in-story .hero .question { width: 100%; }
   <span><span class="kbd">T</span> progress bar</span>
   <span><span class="kbd">O</span> open prototype</span>
   <span><span class="kbd">P</span> auto-play</span>
+  <span><span class="kbd">V</span> presentation</span>
 </div>
 <header class="hero">
   <div class="question">
@@ -3117,11 +3123,17 @@ body.in-story .hero .question { width: 100%; }
     if ((k === 'ArrowLeft' || k === 'ArrowRight') && t && t.classList && t.classList.contains('tn')) { return; }
     var pv = document.getElementById('pv'), lb = document.getElementById('wfLb');
     if (!menu.hidden || (pv && pv.classList.contains('on')) || (lb && !lb.hidden)) { return; }
-    var list = items.filter(function (el) { return chOf(el) && el.getBoundingClientRect().height > 0; });
+    var list = items.filter(function (el) { return chOf(el) && el.getBoundingClientRect().height > 0 && (!window.__pres || window.__pres(el)); });
     var hero = document.querySelector('.hero'); if (hero) { list.unshift(hero); }
     var base = (navEl && Date.now() - navT < 900) ? navEl : (hero && hero.getBoundingClientRect().bottom > window.innerHeight * .5 ? hero : curEl), i = list.indexOf(base);
+    var nx;
+    if (i < 0 && base && window.__pres) {
+      /* presentation mode: the current step isn't on the short route, so go to the next one that is */
+      var pick = dir > 0 ? list.filter(function (el) { return base.compareDocumentPosition(el) & 4; })[0] : list.filter(function (el) { return base.compareDocumentPosition(el) & 2; }).pop();
+      e.preventDefault(); if (pick) { navEl = pick; navT = Date.now(); go(pick); } return;
+    }
     if (i < 0) { return; }
-    var nx = list[i + dir]; e.preventDefault();
+    nx = list[i + dir]; e.preventDefault();
     if (!nx) { return; }
     navEl = nx; navT = Date.now(); go(nx);
   });
@@ -3360,7 +3372,25 @@ body.in-story .hero .question { width: 100%; }
   if (!ap) { return; }
   var LENS = [3, 5, 7, 10], li = 1, playing = false, list = [], dw = [], idx = 0, t0 = 0, timer = 0, tick = 0;
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-  function steps() { var L = [].slice.call(document.querySelectorAll('.fs, .step')).filter(function (el) { return el.dataset.ch && el.getBoundingClientRect().height > 0; }), h = document.querySelector('.hero'); if (h) { L.unshift(h); } return L; }
+  /* presentation mode: a shorter route (chapter -> {position within chapter: relative time}) */
+  var PW = { '01': { 0: 12, 1: 9, 6: 9, 10: 12 }, '03': { 0: 10, 5: 12, 6: 10 }, '04': { 0: 10, 3: 12 }, '05': { 0: 8, 1: 10, 2: 8, 3: 12, 4: 10 }, '06': { 0: 10, 7: 12 }, '07': { 0: 9, 4: 14 }, '08': { 0: 14, 1: 12, 2: 12, 3: 12, 4: 12 } };
+  var presOn = false, wmap = null, modeB = document.getElementById('apMode');
+  try { presOn = /[?&]present\b/.test(location.search) || localStorage.getItem('inqPres') === '1'; } catch (e) { presOn = /[?&]present\b/.test(location.search); }
+  function weightOf(el) {
+    if (el.classList.contains('hero')) { return 12; }
+    if (!wmap) {
+      wmap = new Map(); var seen = {};
+      [].forEach.call(document.querySelectorAll('.fs[data-ch], .step[data-ch]'), function (e) { var c = e.dataset.ch, n = seen[c] || 0; seen[c] = n + 1; wmap.set(e, (PW[c] && PW[c][n]) || 0); });
+    }
+    return wmap.get(el) || 0;
+  }
+  window.__pres = function (el) { return !presOn || weightOf(el) > 0; };
+  function setPres(v) {
+    presOn = v; try { localStorage.setItem('inqPres', v ? '1' : '0'); } catch (e) { /* ignore */ }
+    modeB.setAttribute('aria-pressed', v ? 'true' : 'false'); modeB.textContent = v ? 'Presentation' : 'Full story';
+    document.body.classList.toggle('pres-on', v);
+  }
+  function steps() { var L = [].slice.call(document.querySelectorAll('.fs, .step')).filter(function (el) { return el.dataset.ch && el.getBoundingClientRect().height > 0 && window.__pres(el); }), h = document.querySelector('.hero'); if (h) { L.unshift(h); } return L; }
   function chars(el) {
     var n = 0;
     if (el.classList.contains('tt-sp')) { var pn = el.parentNode.querySelector('.tt-pane[data-i="' + el.dataset.tt + '"]'); n = pn ? pn.textContent.trim().length : 160; }
@@ -3370,7 +3400,7 @@ body.in-story .hero .question { width: 100%; }
     return Math.min(n, 420);
   }
   function plan() {
-    list = steps(); var w = list.map(function (el) { return 70 + chars(el); }), tot = w.reduce(function (a, b) { return a + b; }, 0), T = LENS[li] * 60;
+    list = steps(); var w = list.map(function (el) { return presOn ? weightOf(el) : 70 + chars(el); }), tot = w.reduce(function (a, b) { return a + b; }, 0), T = LENS[li] * 60;
     dw = w.map(function (x) { return Math.max(3, x / tot * T); });
     var s2 = dw.reduce(function (a, b) { return a + b; }, 0); dw = dw.map(function (x) { return Math.max(3, x * T / s2); });
   }
@@ -3413,6 +3443,7 @@ body.in-story .hero .question { width: 100%; }
     var t = e.target; if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) { return; }
     if (!document.body.classList.contains('in-story')) { return; }
     var pv = document.getElementById('pv'); if (pv && pv.classList.contains('on')) { return; }
+    if (e.key === 'v' || e.key === 'V') { e.preventDefault(); if (playing) { stop(); } setPres(!presOn); return; }
     if (e.key === 'p' || e.key === 'P') { e.preventDefault(); if (playing) { stop(); } else { start(); } return; }
     if (playing && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown', 'Home', 'End', ' ', 'Escape'].indexOf(e.key) > -1) { stop(); }
   });
@@ -3427,6 +3458,8 @@ body.in-story .hero .question { width: 100%; }
   }
   document.getElementById('mPrev').addEventListener('click', function () { stepBy(-1); });
   document.getElementById('mNext').addEventListener('click', function () { stepBy(1); });
+  modeB.addEventListener('click', function () { if (playing) { stop(); } setPres(!presOn); });
+  setPres(presOn);
   paint();
   /* phones: report the live text sheet's height so the graphics can size to the space above it */
   var mq = window.matchMedia('(max-width: 899px)'), root = document.documentElement;
