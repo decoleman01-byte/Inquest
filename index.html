@@ -3037,7 +3037,7 @@ body.in-story .hero .question { width: 100%; }
     return out;
   }
   var shownCh = '', nodes = [], curB = null, fill = null;
-  function go(el) { el.scrollIntoView({ behavior: reduce.matches ? 'auto' : 'smooth', block: 'center' }); }
+  function go(el) { if (window.__presGo && window.__presGo(el)) { return; } el.scrollIntoView({ behavior: reduce.matches ? 'auto' : 'smooth', block: 'center' }); }
   function build(c) {
     shownCh = c; track.innerHTML = ''; nodes = [];
     fill = document.createElement('span'); fill.className = 'tfill'; track.appendChild(fill);
@@ -3373,7 +3373,7 @@ body.in-story .hero .question { width: 100%; }
   var LENS = [3, 5, 7, 10], li = 1, playing = false, list = [], dw = [], idx = 0, t0 = 0, timer = 0, tick = 0;
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
   /* presentation mode: a shorter route (chapter -> {position within chapter: relative time}) */
-  var PW = { '01': { 0: 12, 1: 9, 6: 9, 10: 12 }, '03': { 0: 10, 5: 12, 6: 10 }, '04': { 0: 10, 3: 12 }, '05': { 0: 8, 1: 10, 2: 8, 3: 12, 4: 10 }, '06': { 0: 10, 7: 12 }, '07': { 0: 9, 4: 14 }, '08': { 0: 14, 1: 12, 2: 12, 3: 12, 4: 12 } };
+  var PW = { '01': { 0: 10, 1: 9, 6: 9, 9: 9 }, '02': { 2: 12 }, '03': { 0: 10, 5: 12, 6: 10 }, '04': { 0: 14 }, '05': { 0: 8, 1: 10, 2: 8, 3: 12, 4: 10 }, '06': { 0: 14 }, '07': { 0: 14 }, '08': { 0: 14, 1: 12, 2: 12, 3: 12, 4: 12 } };
   var presOn = false, wmap = null, modeB = document.getElementById('apMode');
   try { presOn = /[?&]present\b/.test(location.search) || localStorage.getItem('inqPres') === '1'; } catch (e) { presOn = /[?&]present\b/.test(location.search); }
   function weightOf(el) {
@@ -3389,7 +3389,44 @@ body.in-story .hero .question { width: 100%; }
     presOn = v; try { localStorage.setItem('inqPres', v ? '1' : '0'); } catch (e) { /* ignore */ }
     modeB.setAttribute('aria-pressed', v ? 'true' : 'false'); modeB.textContent = v ? 'Presentation' : 'Full story';
     document.body.classList.toggle('pres-on', v);
+    applyPT(); window.dispatchEvent(new Event('resize'));
   }
+  /* presentation mode swaps a few left-hand texts for short summaries */
+  var PT = {
+    '03:6': '<h3>What I learned</h3><p>If the spec is unclear, drifts from the ticket, or isn\u2019t what the AI was given, the reviewer is checking against a moving target.</p>',
+    '04:0': '<p class="eyebrow">Journey map</p><h3>The experience today</h3><p>A senior engineer takes AI-assisted work through five phases: plan and define, AI executes, verify the work, review and sign off, release and answer.</p><p>The map dips in the middle. When verifying and signing off, the engineer sees only the result and the AI\u2019s own summary, and still has to answer for it.</p>',
+    '06:0': '<p class="eyebrow">Mind map</p><h3>Mapping the pain points</h3><p>With the need at the center, confirm what the AI did against the spec, the map branches into four themes: verification, review burden, traceability and visibility.</p><p>Spec deviations go undetected, reviewers skim and miss what the summary skips, requirements are hard to trace, and errors surface late. It led to three ideas to test: deviation detection, review depth detection, and what changed and why.</p>',
+    '07:0': '<p class="eyebrow">Product analysis</p><h3>Existing Tools in the Space</h3><p>I compared Claude and Claude Code, Braintrust and Agenta. Claude Code keeps a person in charge of each change inside the editor. Braintrust and Agenta record what an agent did as traces and dashboards.</p><p>All three give developers and AI teams a way to watch or control what an AI agent does.</p>'
+  }, origPT = {};
+  function applyPT() {
+    [].forEach.call(document.querySelectorAll('.tt-chap'), function (c) {
+      var sp = c.querySelector('.tt-sp'), ch = sp && sp.dataset.ch; if (!ch) { return; }
+      [].forEach.call(c.querySelectorAll('.tt-pane'), function (pn) {
+        var k = ch + ':' + pn.dataset.i; if (!PT[k]) { return; }
+        if (!(k in origPT)) { origPT[k] = pn.innerHTML; }
+        pn.innerHTML = presOn ? PT[k] : origPT[k];
+      });
+    });
+  }
+  /* long jumps across skipped sections are a quick fade and cut, not a fast scroll through everything in between */
+  var veil = document.createElement('div'); veil.setAttribute('aria-hidden', 'true');
+  veil.style.cssText = 'position:fixed;inset:0;z-index:35;background:#292729;opacity:0;pointer-events:none;transition:opacity .22s ease';
+  document.body.appendChild(veil);
+  window.__presGo = function (el) {
+    if (!presOn) { return false; }
+    var all = [].slice.call(document.querySelectorAll('.hero, .fs[data-ch], .step[data-ch]')).filter(function (e) { return e.getBoundingClientRect().height > 0; }),
+      mid = window.innerHeight / 2, cur = 0, bd = 1e9, ti = all.indexOf(el);
+    all.forEach(function (e, i) { var q = e.getBoundingClientRect(), x = Math.abs((q.top + q.bottom) / 2 - mid); if (x < bd) { bd = x; cur = i; } });
+    var lo = Math.min(cur, ti), hi = Math.max(cur, ti), skipped = false;
+    for (var i = lo + 1; i < hi; i++) { if (!window.__pres(all[i])) { skipped = true; break; } }
+    if (!skipped) { return false; }
+    veil.style.opacity = '1';
+    setTimeout(function () {
+      el.scrollIntoView({ behavior: 'instant', block: 'center' });
+      setTimeout(function () { el.scrollIntoView({ behavior: 'instant', block: 'center' }); veil.style.opacity = '0'; }, 260);
+    }, 230);
+    return true;
+  };
   function steps() { var L = [].slice.call(document.querySelectorAll('.fs, .step')).filter(function (el) { return el.dataset.ch && el.getBoundingClientRect().height > 0 && window.__pres(el); }), h = document.querySelector('.hero'); if (h) { L.unshift(h); } return L; }
   function chars(el) {
     var n = 0;
@@ -3420,7 +3457,7 @@ body.in-story .hero .question { width: 100%; }
   function show() {
     if (!playing) { return; }
     var el = list[idx]; if (!el) { stop(true); return; }
-    el.scrollIntoView({ behavior: reduce.matches ? 'auto' : 'smooth', block: 'center' });
+    if (!window.__presGo(el)) { el.scrollIntoView({ behavior: reduce.matches ? 'auto' : 'smooth', block: 'center' }); }
     t0 = Date.now(); paint();
     var sc = document.querySelector('.stage .scene.is-on'), dur = dw[idx] * 700;
     if (sc) { sc.scrollTop = 0; setTimeout(function () { if (!playing) { return; } var max = sc.scrollHeight - sc.clientHeight; if (max < 8) { return; } var s0 = Date.now(); (function f() { if (!playing) { return; } var k = Math.min(1, (Date.now() - s0) / dur); sc.scrollTop = max * k; if (k < 1) { requestAnimationFrame(f); } })(); }, 900); }
@@ -3454,7 +3491,7 @@ body.in-story .hero .question { width: 100%; }
     var L = steps(), mid = window.innerHeight / 2, best = 0, bd = 1e9;
     L.forEach(function (el, i) { var r = el.getBoundingClientRect(), x = Math.abs((r.top + r.bottom) / 2 - mid); if (x < bd) { bd = x; best = i; } });
     var t = L[Math.max(0, Math.min(L.length - 1, best + d))];
-    if (t) { t.scrollIntoView({ behavior: reduce.matches ? 'auto' : 'smooth', block: 'center' }); }
+    if (t && !window.__presGo(t)) { t.scrollIntoView({ behavior: reduce.matches ? 'auto' : 'smooth', block: 'center' }); }
   }
   document.getElementById('mPrev').addEventListener('click', function () { stepBy(-1); });
   document.getElementById('mNext').addEventListener('click', function () { stepBy(1); });
