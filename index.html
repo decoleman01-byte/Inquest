@@ -803,6 +803,9 @@ button.cta { font: inherit; cursor: pointer; }
 .end .end-proto .proto-link:hover { filter: brightness(1.18); }
 .end .end-proto .proto-link:focus-visible { outline: 3px solid var(--azure); outline-offset: 2px; }
 @media (max-width: 400px) { .end .end-proto .st-wm, #home .hx-proto .st-wm { font-size: 30px; } .end .end-proto .st-logo .mk, .end .end-proto .st-logo .mk svg, #home .hx-proto .st-logo .mk, #home .hx-proto .st-logo .mk svg { width: 44px; height: 44px; } .end .end-proto .st-logo, #home .hx-proto .st-logo { gap: 10px; } .appbar { gap: .4rem; } .appbar .topbar .cta { padding: 0 .65rem; font-size: .78rem; white-space: nowrap; } .appbar .chbtn { padding-inline: .7rem; } }
+@media (max-height: 800px) and (min-width: 900px) { #scene-turn[data-phase="model"] .umodel .um-t { font-size: 1.35rem; } #scene-turn[data-phase="model"] .umodel .um-h { padding-bottom: .5rem; } #scene-turn[data-phase="model"] .umodel .um-q { margin: .8rem 0 .9rem; } #scene-turn[data-phase="model"] .umodel .um-qt { font-size: 1.1rem; } #scene-turn[data-phase="model"] .umodel .um-r > div { padding-block: .6rem; } #scene-turn[data-phase="model"] .umodel .um-l li { padding-block: .3rem; font-size: .82rem; } #scene-turn[data-phase="model"] .umodel .um-l li::before { top: .3rem; bottom: .3rem; } #scene-turn[data-phase="model"] .umodel .um-c { padding-top: .6rem; } #scene-turn[data-phase="model"] .umodel .um-col .um-hd { margin: .3rem 0 .4rem; } #scene-turn[data-phase="model"] .umodel .um-r p, #scene-turn[data-phase="model"] .umodel .um-goal { font-size: .78rem; } }
+/* stage card hugs its content on the roomy panels (height set by script) */
+@media (min-width: 900px) { .stage { transition: height .4s ease, top .4s ease; } }
 /* overview: chapter tiles */
 #home .h-secs { padding: 18px 18px 18px; }
 #home .h-secs .ph { margin-bottom: 14px; }
@@ -3083,6 +3086,28 @@ html:not(.js) .fsm { display: block; }
   document.getElementById('pv-x').addEventListener('click',close);
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&pv.classList.contains('on')){ e.stopPropagation(); close(); } },true);
   window.addEventListener('resize',fit);
+})();
+</script>
+<script>
+(function () {
+  var stage = document.querySelector('.stage'); if (!stage) { return; }
+  var head = stage.querySelector('.stage-head'), FIT = { turn: 1, journey: 1, comp: 1 }, raf = 0;
+  function fit() {
+    raf = 0;
+    if (window.innerWidth < 900) { stage.style.height = ''; stage.style.top = ''; return; }
+    var sc = stage.querySelector('.scene.is-on'), kid = sc && sc.firstElementChild;
+    if (!sc || !FIT[sc.dataset.scene] || !kid) { stage.style.height = ''; stage.style.top = ''; return; }
+    var prev = stage.style.height; stage.style.transition = 'none'; stage.style.height = ''; stage.style.top = '';
+    var avail = stage.offsetHeight; stage.style.height = prev; void stage.offsetHeight; stage.style.transition = '';
+    var cs = getComputedStyle(sc), pad = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+    var want = Math.round((head ? head.offsetHeight : 0) + pad + kid.scrollHeight + 36);
+    var h = Math.max(Math.min(want, avail), Math.min(avail, 300));
+    stage.style.height = h + 'px'; stage.style.top = 'calc(4.7rem + ' + Math.max(0, Math.round((avail - h) / 2)) + 'px)';
+  }
+  function q() { if (!raf) { raf = requestAnimationFrame(fit); } }
+  new MutationObserver(q).observe(stage, { subtree: true, attributes: true, attributeFilter: ['class', 'data-phase', 'hidden'] });
+  window.addEventListener('resize', q); window.addEventListener('load', q); q();
+  if (window.ResizeObserver) { var ro = new ResizeObserver(q); stage.querySelectorAll('.scene').forEach(function (x) { if (x.firstElementChild) { ro.observe(x.firstElementChild); } }); }
 })();
 </script>
 </body>
