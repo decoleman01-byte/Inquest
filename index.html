@@ -1256,6 +1256,17 @@ body.in-story .hero .question { width: 100%; }
 .ap .ap-mode[aria-pressed="true"] { color: #fff; box-shadow: 0 0 0 1.5px #01a2ff, 0 6px 16px rgba(0,0,0,.3); }
 .ap.on .ap-mode, .ap.on .ap-len { display: none; }
 @media (max-width: 899px) { .ap { flex-wrap: wrap; justify-content: flex-end; max-width: 80vw; } .ap .ap-mode { padding: .5rem .7rem; font-size: .75rem; } }
+
+#home .hx-cta { display: flex; flex-wrap: wrap; align-items: center; gap: .9rem 1.1rem; }
+#home .hx-pres { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; gap: .65rem; height: 46px; padding: 0 18px 0 14px; border-radius: 8px; color: #fff; font: 600 15px/1 var(--sans); box-shadow: inset 0 0 0 1.5px #5a555c; cursor: pointer; }
+#home .hx-pres:hover { box-shadow: inset 0 0 0 1.5px #8a848c; }
+#home .hx-pres:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+#home .hx-pres .sw { position: relative; width: 34px; height: 20px; border-radius: 999px; background: #5a555c; transition: background .2s; }
+#home .hx-pres .sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform .2s; }
+#home .hx-pres[aria-pressed="true"] { box-shadow: inset 0 0 0 1.5px var(--azure); }
+#home .hx-pres[aria-pressed="true"] .sw { background: var(--azure); }
+#home .hx-pres[aria-pressed="true"] .sw::after { transform: translateX(14px); background: #0b0b0c; }
+#home .hx-pres .st { color: #b3b3b3; font-weight: 500; } #home .hx-pres[aria-pressed="true"] .st { color: var(--azure); }
 </style>
 </head>
 <body>
@@ -1268,7 +1279,7 @@ body.in-story .hero .question { width: 100%; }
       <p class="dt">GD-503 Spec Dev</p>
       <h1 id="h-title">We set out to understand how engineers actually work with agentic AI, and where that process breaks down.</h1>
       <p class="hx-lede">Our goal was to uncover their underlying needs and design a solution that supports them throughout the specification and development process.</p>
-      <div class="hx-cta"><a class="read hx-go" href="#read"><span>Explore the Process</span></a></div>
+      <div class="hx-cta"><a class="read hx-go" href="#read"><span>Explore the Process</span></a><button type="button" class="hx-pres" id="hxPres" aria-pressed="false" title="A shorter route through the story, about 5 minutes with auto-play"><span class="sw" aria-hidden="true"></span><span class="tl">Presentation mode</span><span class="st" id="hxPresSt">Off</span></button></div>
     </div>
     <nav class="hx-r" aria-label="Chapters">
       <h3 class="ix-g">Research</h3>
@@ -3397,6 +3408,7 @@ body.in-story .hero .question { width: 100%; }
     presOn = v; try { localStorage.setItem('inqPres', v ? '1' : '0'); } catch (e) { /* ignore */ }
     modeB.setAttribute('aria-pressed', v ? 'true' : 'false'); modeB.textContent = v ? 'Presentation' : 'Full story';
     document.body.classList.toggle('pres-on', v);
+    var hp = document.getElementById('hxPres'); if (hp) { hp.setAttribute('aria-pressed', v ? 'true' : 'false'); document.getElementById('hxPresSt').textContent = v ? 'On' : 'Off'; }
     applyPT(); window.dispatchEvent(new Event('resize'));
   }
   /* presentation mode swaps a few left-hand texts for short summaries */
@@ -3504,6 +3516,7 @@ body.in-story .hero .question { width: 100%; }
   document.getElementById('mPrev').addEventListener('click', function () { stepBy(-1); });
   document.getElementById('mNext').addEventListener('click', function () { stepBy(1); });
   modeB.addEventListener('click', function () { if (playing) { stop(); } setPres(!presOn); });
+  var hxp = document.getElementById('hxPres'); if (hxp) { hxp.addEventListener('click', function () { setPres(!presOn); }); }
   setPres(presOn);
   paint();
   /* phones: report the live text sheet's height so the graphics can size to the space above it */
