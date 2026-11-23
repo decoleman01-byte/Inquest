@@ -1115,6 +1115,24 @@ html:not(.js) .fsm { display: block; }
 .wf-chap .wf-eye b { color: #fff; }
 .wf-chap .wf-text p { max-width: 30rem; }
 @media (max-width: 899px) { .wf-chap .wf-text { position: static; grid-row: auto; } .wf-chap .wf-sp { min-height: 40svh; } }
+
+/* ===== unified left-panel type (all chapters) ===== */
+.tt-chap .tt-pane h2, .wf-chap .wf-text h2, .fcap h2, .fcap h2.long { font-family: var(--sans); font-weight: 600; font-size: clamp(2rem, 3.4vw, 2.75rem); line-height: 1.1; letter-spacing: -.03em; color: #fff; margin: 0 0 1rem; text-wrap: balance; }
+.tt-chap .tt-pane h3, .fcap h3 { font-family: var(--sans); font-weight: 600; font-size: clamp(1.6rem, 2.6vw, 2.1rem); line-height: 1.12; letter-spacing: -.025em; color: #fff; margin: 0 0 .9rem; max-width: none; text-wrap: balance; }
+.tt-chap .tt-pane .eyebrow, .wf-chap .wf-eye, .fcap .ce { font: 400 .8125rem/1.4 var(--sans); letter-spacing: 0; color: #b3b3b3; margin: 0 0 .6rem; }
+.tt-chap .tt-pane .eyebrow b, .wf-chap .wf-eye b, .fcap .ce b { font-weight: 600; color: #fff; }
+.tt-chap .tt-pane p:not(.eyebrow), .wf-chap .wf-text p:not(.wf-eye), .fcap p, .fstage[data-phase] .fcap p { font: 400 1rem/1.6 var(--sans); letter-spacing: 0; color: #fff; margin: 0 0 1rem; max-width: 34rem; }
+.fcap p.sm, .fstage[data-phase] .fcap p.sm { font-size: .875rem; color: #b3b3b3; }
+.fsm h2 { font-weight: 600; letter-spacing: -.03em; }
+.fsm h3 { font-weight: 600; letter-spacing: -.025em; }
+.tt-chap .tt-pane { align-self: start; }
+/* text and graph change in place: the left text is pinned and cross-fades between chapters */
+@media (min-width: 900px) {
+  .tt-chap .tt-text, .wf-chap .wf-text { position: fixed; top: 26svh; left: 0; width: 34rem; max-width: 34rem; margin: 0; opacity: 0; visibility: hidden; transition: opacity .45s ease, visibility 0s .45s, top .4s ease; }
+  .wf-chap .wf-text { top: 24svh; }
+  .tt-chap .tt-text.is-live, .wf-chap .wf-text.is-live { opacity: 1; visibility: visible; transition: opacity .5s ease .18s, visibility 0s, top .4s ease; }
+}
+@media (prefers-reduced-motion: reduce) { .tt-chap .tt-text, .wf-chap .wf-text, .tt-chap .tt-text.is-live, .wf-chap .wf-text.is-live { transition: none; } }
 </style>
 </head>
 <body>
@@ -2905,8 +2923,10 @@ html:not(.js) .fsm { display: block; }
     nameEl.textContent = NAMES[c] || '';
     [].slice.call(menu.querySelectorAll('ul button')).forEach(function (m) { m.setAttribute('aria-current', m.dataset.ch === c ? 'true' : 'false'); });
   }
+  var curEl = null, navEl = null, navT = 0;
   function setActive(el) {
     var c = chOf(el); if (!c) { return; }
+    curEl = el;
     if (c !== shownCh) { build(c); try { history.replaceState(null, '', '#ch' + c); } catch (e) {} }
     window.__curCh = c;
     var idx = 0;
@@ -2938,6 +2958,21 @@ html:not(.js) .fsm { display: block; }
   btn.addEventListener('click', function () { var open = menu.hidden; menu.hidden = !open; btn.setAttribute('aria-expanded', open ? 'true' : 'false'); if (open) { var a = menu.querySelector('[aria-current="true"]') || menu.querySelector('ul button'); if (a) { a.focus(); } } });
   document.addEventListener('click', function (e) { if (!menu.hidden && !document.getElementById('chsel').contains(e.target)) { closeMenu(); } });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !menu.hidden) { closeMenu(); btn.focus(); } });
+  /* arrow keys step through the story: right/down = next, left/up = previous */
+  document.addEventListener('keydown', function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey || !document.body.classList.contains('in-story')) { return; }
+    var k = e.key, dir = (k === 'ArrowRight' || k === 'ArrowDown') ? 1 : (k === 'ArrowLeft' || k === 'ArrowUp') ? -1 : 0;
+    if (!dir) { return; }
+    var t = e.target; if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) { return; }
+    var pv = document.getElementById('pv'), lb = document.getElementById('wfLb');
+    if (!menu.hidden || (pv && pv.classList.contains('on')) || (lb && !lb.hidden)) { return; }
+    var list = items.filter(function (el) { return chOf(el) && el.getBoundingClientRect().height > 0; });
+    var base = (navEl && Date.now() - navT < 900) ? navEl : curEl, i = list.indexOf(base);
+    if (i < 0) { return; }
+    var nx = list[i + dir]; e.preventDefault();
+    if (!nx) { return; }
+    navEl = nx; navT = Date.now(); go(nx);
+  });
   menu.addEventListener('click', function (e) {
     var b = e.target.closest('button'); if (!b) { return; }
     if (b.id === 'back') { closeMenu(); return; }
@@ -3108,6 +3143,46 @@ html:not(.js) .fsm { display: block; }
   new MutationObserver(q).observe(stage, { subtree: true, attributes: true, attributeFilter: ['class', 'data-phase', 'hidden'] });
   window.addEventListener('resize', q); window.addEventListener('load', q); q();
   if (window.ResizeObserver) { var ro = new ResizeObserver(q); stage.querySelectorAll('.scene').forEach(function (x) { if (x.firstElementChild) { ro.observe(x.firstElementChild); } }); }
+})();
+</script>
+
+<script>
+/* pinned left text: cross-fades between chapters instead of scrolling away */
+(function () {
+  var story = document.querySelector('.story');
+  var texts = [].slice.call(document.querySelectorAll('.tt-text, .wf-text'));
+  if (!story || !texts.length) { return; }
+  var mq = window.matchMedia('(min-width: 900px)'), raf = 0;
+  function layout() {
+    raf = 0;
+    if (!mq.matches) { texts.forEach(function (t) { t.classList.remove('is-live'); t.style.left = t.style.top = t.style.width = ''; }); return; }
+    var act = document.querySelector('.step.is-active'), chap = act && act.closest('.tt-chap, .wf-chap');
+    var sr = story.getBoundingClientRect(), inView = sr.top < innerHeight * 0.58 && sr.bottom > innerHeight * 0.42;
+    var r = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    var mid = 4.7 * r + Math.max(innerHeight - 5.5 * r, 28 * r) / 2;
+    texts.forEach(function (t) {
+      var c = t.parentNode, live = !!(inView && chap === c), was = t.classList.contains('is-live');
+      if (live) {
+        var cr = c.getBoundingClientRect(), pane = t.querySelector('.tt-pane.is-on');
+        var top = (t.classList.contains('wf-text') ? 0.24 : 0.26) * innerHeight;
+        var ph = act.dataset.phase;
+        if (act.dataset.scene === 'turn' && pane && (ph === 'believe' || ph === 'morph' || ph === 'hmw')) { top = Math.max(4.7 * r + 8, mid - pane.offsetHeight / 2); }
+        if (!was) { t.style.transition = 'none'; }
+        t.style.left = Math.round(cr.left) + 'px'; t.style.width = Math.min(cr.width, 34 * r) + 'px'; t.style.top = Math.round(top) + 'px';
+        if (!was) { void t.offsetHeight; t.style.transition = ''; }
+      }
+      t.classList.toggle('is-live', live);
+    });
+  }
+  function q() { if (!raf) { raf = requestAnimationFrame(layout); } }
+  var until = 0;
+  function burst() { until = Date.now() + 800; (function tick() { layout(); if (Date.now() < until) { requestAnimationFrame(tick); } })(); }
+  var mo = new MutationObserver(q);
+  new MutationObserver(burst).observe(story, { attributes: true, attributeFilter: ['class'] });
+  document.querySelectorAll('.steps .step, .tt-pane').forEach(function (n) { mo.observe(n, { attributes: true, attributeFilter: ['class', 'data-phase'] }); });
+  window.addEventListener('scroll', q, { passive: true }); window.addEventListener('resize', q); window.addEventListener('load', q);
+  if (mq.addEventListener) { mq.addEventListener('change', q); }
+  q();
 })();
 </script>
 </body>
