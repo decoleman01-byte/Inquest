@@ -1238,10 +1238,19 @@ body.in-story .ap { display: flex; }
   .jm-curve { height: 7.5rem; }
   body.at-end .tt-chap .tt-text, body.at-end .wf-chap .wf-text, body.at-end .ap { opacity: 0 !important; visibility: hidden !important; pointer-events: none; }
 }
+
+.mnav { display: none; }
+@media (max-width: 899px) {
+  body.in-story .mnav { display: flex; position: fixed; z-index: 40; left: .6rem; bottom: calc(var(--sheet, 40svh) + .5rem); gap: .4rem; transition: bottom .3s ease; }
+  .mnav button { width: 2.5rem; height: 2.5rem; border: 0; border-radius: 50%; color: #fff; background: rgba(33,31,34,.9); box-shadow: 0 0 0 1px #484349, 0 6px 16px rgba(0,0,0,.3); display: grid; place-items: center; }
+  .mnav button:active { background: #3b373c; }
+  body.at-end .mnav { display: none; }
+}
 </style>
 </head>
 <body>
 <div class="ap" id="ap" role="group" aria-label="Auto-play"><button type="button" class="ap-go" id="apGo" aria-keyshortcuts="P" aria-label="Start auto-play"><svg class="i-play" viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M4 2.5v11l9-5.5z"/></svg><svg class="i-pause" viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M4 2.5h3v11H4zM9 2.5h3v11H9z"/></svg><span class="ap-l" id="apL">Auto-play</span></button><button type="button" class="ap-len" id="apLen" aria-label="Change length">5 min</button></div>
+<div class="mnav" id="mnav"><button type="button" id="mPrev" aria-label="Previous step"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3 5 8l5 5"/></svg></button><button type="button" id="mNext" aria-label="Next step"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg></button></div>
 <div id="pv" role="dialog" aria-modal="true" aria-label="INQUEST prototype"><div class="pv-bar"><span></span><button class="pv-x" type="button" id="pv-x">Close</button></div><div class="pv-st" id="pv-st"></div></div>
 <div id="home">
   <div class="hgrid hx">
@@ -3400,6 +3409,17 @@ body.in-story .ap { display: flex; }
     if (e.key === 'p' || e.key === 'P') { e.preventDefault(); if (playing) { stop(); } else { start(); } return; }
     if (playing && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown', 'Home', 'End', ' ', 'Escape'].indexOf(e.key) > -1) { stop(); }
   });
+
+  /* phone prev / next buttons */
+  function stepBy(d) {
+    if (playing) { stop(); }
+    var L = steps(), mid = window.innerHeight / 2, best = 0, bd = 1e9;
+    L.forEach(function (el, i) { var r = el.getBoundingClientRect(), x = Math.abs((r.top + r.bottom) / 2 - mid); if (x < bd) { bd = x; best = i; } });
+    var t = L[Math.max(0, Math.min(L.length - 1, best + d))];
+    if (t) { t.scrollIntoView({ behavior: reduce.matches ? 'auto' : 'smooth', block: 'center' }); }
+  }
+  document.getElementById('mPrev').addEventListener('click', function () { stepBy(-1); });
+  document.getElementById('mNext').addEventListener('click', function () { stepBy(1); });
   paint();
   /* phones: report the live text sheet's height so the graphics can size to the space above it */
   var mq = window.matchMedia('(max-width: 899px)'), root = document.documentElement;
