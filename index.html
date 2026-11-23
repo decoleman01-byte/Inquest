@@ -873,6 +873,7 @@ body.in-story .appbar .share { background: none; }
 .fstage { position: sticky; top: 0; height: 100svh; overflow: hidden; }
 .fsteps { position: relative; margin-top: -100svh; pointer-events: none; }
 .fs { min-height: 62svh; }
+@media (min-width: 900px) { .fs:first-child[data-i="0"] { min-height: calc(100svh + 2rem); } }
 .fs:first-child { min-height: 92svh; }
 .fs:last-child { min-height: 95svh; }
 .fsm { display: none; }
@@ -1282,7 +1283,7 @@ body.in-story .hero .question { width: 100%; }
 .ap .ap-mode[aria-pressed="true"] { color: #fff; box-shadow: 0 0 0 1.5px #01a2ff, 0 6px 16px rgba(0,0,0,.3); }
 .ap.on .ap-len { display: none; }
 body.pres-on, html:has(body.pres-on) { scroll-behavior: auto !important; }
-body.pres-on *:not(.fstage):not(.fstage *), body.pres-on *::before, body.pres-on *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+body.pres-on *, body.pres-on *::before, body.pres-on *::after { scroll-behavior: auto !important; }
 .ap .ap-mode { display: inline-flex; align-items: center; gap: .55rem; }
 .ap .ap-mode .sw { position: relative; width: 28px; height: 16px; border-radius: 999px; background: #5a555c; transition: background .2s; flex: none; }
 .ap .ap-mode .sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: #fff; transition: transform .2s; }
@@ -3557,6 +3558,27 @@ body.pres-on *:not(.fstage):not(.fstage *), body.pres-on *::before, body.pres-on
   }
   document.getElementById('mPrev').addEventListener('click', function () { stepBy(-1); });
   document.getElementById('mNext').addEventListener('click', function () { stepBy(1); });
+  /* presentation mode: a scroll or swipe moves one step along the short route instead of scrolling through everything */
+  (function () {
+    var lock = 0, ty = null, tx = null;
+    function skip(t) { return !t || !t.closest || t.closest('#pv, #wfLb, .wf-strip, .ctip, input, textarea, select'); }
+    function live() { return presOn && document.body.classList.contains('in-story'); }
+    window.addEventListener('wheel', function (e) {
+      if (!live() || e.ctrlKey || skip(e.target)) { return; }
+      e.preventDefault();
+      var d = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : 0;
+      if (Math.abs(d) < 4) { return; }
+      var now = Date.now(); if (now - lock < 700) { return; }
+      lock = now; stepBy(d > 0 ? 1 : -1);
+    }, { passive: false });
+    window.addEventListener('touchstart', function (e) { if (!live() || skip(e.target) || e.touches.length !== 1) { ty = null; return; } ty = e.touches[0].clientY; tx = e.touches[0].clientX; }, { passive: true });
+    window.addEventListener('touchmove', function (e) { if (ty !== null && live()) { e.preventDefault(); } }, { passive: false });
+    window.addEventListener('touchend', function (e) {
+      if (ty === null || !live()) { ty = null; return; }
+      var t = e.changedTouches[0], dy = ty - t.clientY, dx = tx - t.clientX; ty = null;
+      if (Math.abs(dy) > 40 && Math.abs(dy) > Math.abs(dx)) { stepBy(dy > 0 ? 1 : -1); }
+    }, { passive: true });
+  })();
   modeB.addEventListener('click', function () { if (playing) { stop(); } setPres(!presOn); });
   var hxp = document.getElementById('hxPres'); if (hxp) { hxp.addEventListener('click', function () { setPres(!presOn); }); }
   setPres(presOn);
