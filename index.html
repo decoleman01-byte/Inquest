@@ -3132,8 +3132,8 @@ html:not(.js) .fsm { display: block; }
     if (window.innerWidth < 900) { stage.style.height = ''; stage.style.top = ''; stage.style.minHeight = ''; return; }
     var sc = stage.querySelector('.scene.is-on'), kid = sc && sc.firstElementChild;
     if (!sc || !FIT[sc.dataset.scene] || !kid) { stage.style.height = ''; stage.style.top = ''; stage.style.minHeight = ''; return; }
-    var prev = stage.style.height; stage.style.transition = 'none'; stage.style.height = ''; stage.style.top = '';
-    var avail = stage.offsetHeight; stage.style.height = prev; void stage.offsetHeight; stage.style.transition = '';
+    var prev = stage.style.height, prevTop = stage.style.top; stage.style.transition = 'none'; stage.style.height = ''; stage.style.top = '';
+    var avail = stage.offsetHeight; stage.style.height = prev; stage.style.top = prevTop; void stage.offsetHeight; stage.style.transition = '';
     var cs = getComputedStyle(sc), pad = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
     var want = Math.round((head ? head.offsetHeight : 0) + pad + kid.scrollHeight + 36);
     var h = Math.max(Math.min(want, avail), Math.min(avail, 260));
@@ -3183,6 +3183,22 @@ html:not(.js) .fsm { display: block; }
   window.addEventListener('scroll', q, { passive: true }); window.addEventListener('resize', q); window.addEventListener('load', q);
   if (mq.addEventListener) { mq.addEventListener('change', q); }
   q();
+})();
+</script>
+<script>
+/* the interviews/analysis stage fades out as you leave it, instead of sliding away */
+(function () {
+  var fst = document.querySelector('.fstage'); if (!fst) { return; }
+  var box = fst.parentElement, raf = 0;
+  function upd() {
+    raf = 0;
+    var vh = window.innerHeight, b = box.getBoundingClientRect().bottom;
+    var o = Math.max(0, Math.min(1, (b - vh * 0.5) / (vh * 0.4)));
+    fst.style.opacity = o >= 1 ? '' : o.toFixed(3);
+    fst.style.visibility = o <= 0 ? 'hidden' : '';
+  }
+  function q() { if (!raf) { raf = requestAnimationFrame(upd); } }
+  window.addEventListener('scroll', q, { passive: true }); window.addEventListener('resize', q); q();
 })();
 </script>
 </body>
