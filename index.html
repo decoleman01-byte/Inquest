@@ -1133,6 +1133,8 @@ html:not(.js) .fsm { display: block; }
   .tt-chap .tt-text.is-live, .wf-chap .wf-text.is-live { opacity: 1; visibility: visible; transition: opacity .5s ease .18s, visibility 0s, top .4s ease; }
 }
 @media (prefers-reduced-motion: reduce) { .tt-chap .tt-text, .wf-chap .wf-text, .tt-chap .tt-text.is-live, .wf-chap .wf-text.is-live { transition: none; } }
+.chbtn:focus-visible, .cta:focus-visible, .track .tn:focus-visible, .chmenu button:focus-visible { outline: 2px solid #01a2ff; outline-offset: 3px; }
+.chmenu button:focus-visible { background: rgba(1,162,255,.16); outline-offset: -2px; }
 </style>
 </head>
 <body>
@@ -1173,14 +1175,14 @@ html:not(.js) .fsm { display: block; }
 <div id="story-view">
 <header class="appbar">
   <div class="chsel" id="chsel">
-    <button class="chbtn" id="chbtn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="chmenu"><span id="chname">Interviews</span><svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1.5 1.5 6 6l4.5-4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button class="chbtn" id="chbtn" type="button" aria-keyshortcuts="M" aria-haspopup="true" aria-expanded="false" aria-controls="chmenu"><span id="chname">Interviews</span><svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1.5 1.5 6 6l4.5-4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <div class="chmenu" id="chmenu" hidden>
       <button class="chhome" id="back" type="button">Back to overview</button>
       <ul><li role="option"><button type="button" data-ch="01"><b>01</b><span>Interviews</span></button></li><li role="option"><button type="button" data-ch="02"><b>02</b><span>Thematic analysis</span></button></li><li role="option"><button type="button" data-ch="03"><b>03</b><span>Ecosystem</span></button></li><li role="option"><button type="button" data-ch="04"><b>04</b><span>Journey map</span></button></li><li role="option"><button type="button" data-ch="05"><b>05</b><span>The user model</span></button></li><li role="option"><button type="button" data-ch="06"><b>06</b><span>Mind map</span></button></li><li role="option"><button type="button" data-ch="07"><b>07</b><span>Competitor analysis</span></button></li><li role="option"><button type="button" data-ch="08"><b>08</b><span>Wireframes</span></button></li></ul>
     </div>
   </div>
   <div class="track" id="track" role="group" aria-label="Progress through this chapter"></div>
-  <div class="topbar"><button class="cta" type="button" data-open-proto>Open prototype</button></div>
+  <div class="topbar"><button class="cta" type="button" data-open-proto aria-keyshortcuts="O">Open prototype</button></div>
   <nav class="rail" id="rail" aria-label="Chapters" hidden></nav>
   <div class="progress" id="progress" aria-hidden="true" hidden></div>
 </header>
@@ -1189,7 +1191,7 @@ html:not(.js) .fsm { display: block; }
   <div>
     <p class="eyebrow">Research story from six interviews</p>
     <h1>They trust the AI. They <em>can&rsquo;t prove</em> what it did.</h1>
-    <p class="lede">A research story from six interviews with people who build, test and design software alongside AI tools. Scroll slowly. The evidence on the right will rearrange itself as the story moves, and most of it can be clicked. Use the <span class="kbd">←</span> <span class="kbd">→</span> arrow keys to step through.</p>
+    <p class="lede">A research story from six interviews with people who build, test and design software alongside AI tools. Scroll slowly. The evidence on the right will rearrange itself as the story moves, and most of it can be clicked. Press <span class="kbd">↓</span> and <span class="kbd">↑</span> to step through, <span class="kbd">M</span> for the chapter menu, <span class="kbd">T</span> for the progress bar and <span class="kbd">O</span> to open the prototype.</p>
   </div>
   <div class="question">
     <p class="eyebrow">Research question</p>
@@ -2442,17 +2444,6 @@ html:not(.js) .fsm { display: block; }
   var baseApplyScene = applyScene;
   applyScene = function (sc, st) { sc.dataset.solo = ''; baseApplyScene(sc, st); };
 
-  // keyboard: j / k step through the story
-  document.addEventListener('keydown', function (e) {
-    if (e.metaKey || e.ctrlKey || e.altKey || !body.classList.contains('in-story')) { return; }
-    var t = e.target.tagName;
-    if (t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT') { return; }
-    var i = steps.indexOf(currentStep);
-    if (e.key === 'j' && i < steps.length - 1) { steps[i + 1].scrollIntoView({ behavior: reduce.matches ? 'auto' : 'smooth', block: 'center' }); }
-    if (e.key === 'k' && i > 0) { steps[i - 1].scrollIntoView({ behavior: reduce.matches ? 'auto' : 'smooth', block: 'center' }); }
-  });
-
-
   // thematic map detail panel
   var mapScene = document.getElementById('scene-map');
   var detail = document.getElementById('tdetail');
@@ -2958,12 +2949,41 @@ html:not(.js) .fsm { display: block; }
   btn.addEventListener('click', function () { var open = menu.hidden; menu.hidden = !open; btn.setAttribute('aria-expanded', open ? 'true' : 'false'); if (open) { var a = menu.querySelector('[aria-current="true"]') || menu.querySelector('ul button'); if (a) { a.focus(); } } });
   document.addEventListener('click', function (e) { if (!menu.hidden && !document.getElementById('chsel').contains(e.target)) { closeMenu(); } });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !menu.hidden) { closeMenu(); btn.focus(); } });
-  /* arrow keys step through the story: right/down = next, left/up = previous */
+  /* menu, progress bar and prototype by keyboard */
+  function typing(t) { return t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable); }
+  function modalOpen() { var pv = document.getElementById('pv'), lb = document.getElementById('wfLb'); return (pv && pv.classList.contains('on')) || (lb && !lb.hidden); }
+  function openMenu() {
+    menu.hidden = false; btn.setAttribute('aria-expanded', 'true');
+    var a = menu.querySelector('[aria-current="true"]') || menu.querySelector('ul button'); if (a) { a.focus(); }
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey || !document.body.classList.contains('in-story') || typing(e.target) || modalOpen()) { return; }
+    var k = e.key.toLowerCase();
+    if (!menu.hidden && menu.contains(e.target)) {
+      var bs = [].slice.call(menu.querySelectorAll('button')), i = bs.indexOf(e.target);
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); bs[(i + (e.key === 'ArrowDown' ? 1 : bs.length - 1)) % bs.length].focus(); }
+      else if (e.key === 'Home') { e.preventDefault(); bs[0].focus(); }
+      else if (e.key === 'End') { e.preventDefault(); bs[bs.length - 1].focus(); }
+      else if (k === 'm') { e.preventDefault(); closeMenu(); btn.focus(); }
+      return;
+    }
+    if (e.shiftKey) { return; }
+    if (k === 'm') { e.preventDefault(); if (menu.hidden) { openMenu(); } else { closeMenu(); btn.focus(); } }
+    else if (k === 't') { var tn = track.querySelector('.tn.on') || track.querySelector('.tn'); if (tn) { e.preventDefault(); tn.focus(); } }
+    else if (k === 'o') { var pb = document.querySelector('.topbar [data-open-proto]'); if (pb) { e.preventDefault(); pb.click(); } }
+    else if (track.contains(e.target) && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+      var ns = [].slice.call(track.querySelectorAll('.tn')), j = ns.indexOf(e.target);
+      if (j > -1) { e.preventDefault(); ns[Math.max(0, Math.min(ns.length - 1, j + (e.key === 'ArrowRight' ? 1 : -1)))].focus(); }
+    }
+    else if (e.key === 'Escape' && track.contains(e.target)) { e.target.blur(); }
+  });
+  /* arrow keys step through the story: down = next, up = previous */
   document.addEventListener('keydown', function (e) {
     if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey || !document.body.classList.contains('in-story')) { return; }
     var k = e.key, dir = (k === 'ArrowRight' || k === 'ArrowDown') ? 1 : (k === 'ArrowLeft' || k === 'ArrowUp') ? -1 : 0;
     if (!dir) { return; }
     var t = e.target; if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) { return; }
+    if ((k === 'ArrowLeft' || k === 'ArrowRight') && t && t.classList && t.classList.contains('tn')) { return; }
     var pv = document.getElementById('pv'), lb = document.getElementById('wfLb');
     if (!menu.hidden || (pv && pv.classList.contains('on')) || (lb && !lb.hidden)) { return; }
     var list = items.filter(function (el) { return chOf(el) && el.getBoundingClientRect().height > 0; });
