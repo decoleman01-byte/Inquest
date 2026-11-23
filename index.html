@@ -30,6 +30,7 @@
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
+@media (min-width: 1500px) and (min-height: 700px) { html { font-size: clamp(16px, min(1.07vw, 1.75vh), 30px); } }
 body {
   margin: 0;
   background: var(--bg);
@@ -48,7 +49,7 @@ a { color: inherit; }
 .eyebrow b { color: var(--signal); font-weight: 500; }
 
 /* ---------- Opening ---------- */
-.hero { max-width: 1280px; margin: 0 auto; padding: 5rem 1.5rem 4rem; display: grid; gap: 3.5rem; }
+.hero { max-width: 80rem; margin: 0 auto; padding: 5rem 1.5rem 4rem; display: grid; gap: 3.5rem; }
 .hero h1 { font-family: var(--display); font-weight: 400; font-size: clamp(2.8rem, 8vw, 6.4rem); line-height: 1; margin: 0; max-width: 13ch; text-wrap: balance; }
 .hero h1 em { color: var(--signal); font-style: italic; }
 .hero .lede { max-width: 38rem; color: var(--muted); margin: 1.5rem 0 0; font-size: 1.125rem; }
@@ -59,7 +60,7 @@ a { color: inherit; }
 .proto-note { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); border: 1px dashed var(--line); padding: 0.5rem 0.75rem; width: fit-content; }
 
 /* ---------- Story grid ---------- */
-.story { max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(1.5rem, 4vw, 4rem); }
+.story { max-width: 80rem; margin: 0 auto; padding: 0 1.5rem; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(1.5rem, 4vw, 4rem); }
 .stage-col { grid-column: 2; grid-row: 1; }
 .steps { grid-column: 1; grid-row: 1; }
 
@@ -284,7 +285,7 @@ a { color: inherit; }
 
 
 /* ---------- Interactive layer ---------- */
-.guess { max-width: 1280px; margin: 0 auto; padding: 1rem 1.5rem 5rem; }
+.guess { max-width: 80rem; margin: 0 auto; padding: 1rem 1.5rem 5rem; }
 .guess-inner { border-top: 1px solid var(--line); padding-top: 2rem; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(1.5rem, 4vw, 4rem); align-items: start; }
 .guess h2 { font-family: var(--display); font-weight: 400; font-size: clamp(1.8rem, 3.6vw, 3rem); line-height: 1.1; margin: 0 0 1.25rem; text-wrap: balance; }
 .guess p { margin: 0 0 1rem; max-width: 32rem; }
@@ -451,7 +452,7 @@ details.deeper .inner q { color: var(--text); quotes: "\201C" "\201D"; }
 .note { border-left: 2px solid var(--line); padding-left: 0.75rem; }
 
 /* ---------- Ending ---------- */
-.end { max-width: 1280px; margin: 0 auto; padding: 5rem 1.5rem 6rem; border-top: 1px solid var(--line); }
+.end { max-width: 80rem; margin: 0 auto; padding: 5rem 1.5rem 6rem; border-top: 1px solid var(--line); }
 .end h2 { font-family: var(--display); font-weight: 400; font-size: clamp(2rem, 4vw, 3.2rem); margin: 0 0 1.5rem; max-width: 20ch; text-wrap: balance; }
 .chapters { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); gap: 0.5rem 1.5rem; font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.06em; }
 .chapters li { padding: 0.5rem 0; border-top: 1px solid var(--line); color: var(--muted); }
@@ -1035,6 +1036,27 @@ html:not(.js) .fsm { display: block; }
 
 /* Ch 06 mind map */
 #scene-mind { padding: 0; overflow: hidden; }
+.wf-chap .wf-text .wf-final[hidden] { display: none; }
+.wf-chap .wf-text.is-final .wf-orig { display: none; }
+.wf-chap .wf-text .wf-proto { pointer-events: auto; margin-top: 1.6rem; }
+.wf-chap .wf-text .wf-proto .end-proto { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; border-radius: 12px; border: 1px solid var(--line); background: #3b373c; }
+.wf-chap .wf-text .wf-proto .st-logo { display: flex; align-items: center; }
+.wf-chap .wf-text .wf-proto .st-wm { font: 700 34px/1 var(--sans); letter-spacing: .02em; color: #fff; }
+.wf-chap .wf-text .wf-proto .end-proto { margin: 0; max-width: 30rem; padding: 14px 16px; gap: 1rem; }
+.wf-chap .wf-text .wf-proto .st-wm { font-size: 34px !important; }
+.wf-chap .wf-text .wf-proto .st-logo .mk, .wf-chap .wf-text .wf-proto .st-logo .mk svg { width: 48px; height: 48px; }
+.wf-chap .wf-text .wf-proto .st-logo { gap: 12px; }
+.wf-chap .wf-text .wf-proto .proto-link { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 20px; border: 1px solid #fff; border-radius: 6px; background: rgba(51,51,51,.4); box-shadow: inset 0 1px 2px rgba(255,255,255,.25); cursor: pointer; font: 600 14px/1.2 var(--sans); color: #fff; }
+.wf-chap .wf-text .wf-proto .proto-link:focus-visible { outline: 3px solid var(--azure); outline-offset: 2px; }
+@media (min-width: 900px) { footer.end { display: none; } }
+@media (max-width: 899px) { .wf-chap .wf-text .wf-proto { display: none; } }
+
+@media (min-width: 900px) {
+  .stage:has(#scene-system.is-on), .stage:has(#scene-mind.is-on) { background: none; border-color: transparent; box-shadow: none; }
+  #scene-system, #scene-mind { inset: auto; top: 50%; left: 50%; transform: translate(-50%, -50%); width: min(100%, calc((100svh - 5.5rem) * var(--ar))); height: auto; aspect-ratio: var(--ar); background: var(--pgrad); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--sheen); }
+  #scene-system { --ar: 1.01; }
+  #scene-mind { --ar: .832; }
+}
 .mmap { width: 100%; height: 100%; display: block; font-family: Inter, var(--ui, system-ui), sans-serif; }
 .mmap .mm-ch { fill: #8d8794; font-size: 34px; font-weight: 600; letter-spacing: .08em; }
 .mmap .mm-e { fill: none; stroke-width: 6; transition: opacity .4s; }
@@ -1100,7 +1122,7 @@ html:not(.js) .fsm { display: block; }
 
 @media (min-width: 900px) {
   .story { transition: grid-template-columns .5s ease, max-width .5s ease; }
-  .story.wide { max-width: 1680px; grid-template-columns: minmax(0, 3fr) minmax(0, 8fr); }
+  .story.wide { max-width: 105rem; grid-template-columns: minmax(0, 3fr) minmax(0, 8fr); }
 }
 
 .step strong.key { color: #fff; font-weight: 700; font-size: 1.08em; background: linear-gradient(transparent 62%, rgba(1,162,255,.35) 62%) no-repeat 0 0 / calc(var(--p, 1) * 100%) 100%; padding: 0 .1em; }
@@ -1254,7 +1276,15 @@ body.in-story .hero .question { width: 100%; }
 
 .ap .ap-mode { color: #b3b3b3; padding: .6rem .8rem; }
 .ap .ap-mode[aria-pressed="true"] { color: #fff; box-shadow: 0 0 0 1.5px #01a2ff, 0 6px 16px rgba(0,0,0,.3); }
-.ap.on .ap-mode, .ap.on .ap-len { display: none; }
+.ap.on .ap-len { display: none; }
+body.pres-on, html:has(body.pres-on) { scroll-behavior: auto !important; }
+body.pres-on *, body.pres-on *::before, body.pres-on *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+.ap .ap-mode { display: inline-flex; align-items: center; gap: .55rem; }
+.ap .ap-mode .sw { position: relative; width: 28px; height: 16px; border-radius: 999px; background: #5a555c; transition: background .2s; flex: none; }
+.ap .ap-mode .sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: #fff; transition: transform .2s; }
+.ap .ap-mode[aria-pressed="true"] .sw { background: #01a2ff; }
+.ap .ap-mode[aria-pressed="true"] .sw::after { transform: translateX(12px); }
+
 @media (max-width: 899px) { .ap { flex-wrap: wrap; justify-content: flex-end; max-width: 80vw; } .ap .ap-mode { padding: .5rem .7rem; font-size: .75rem; } }
 
 #home .hx-cta { display: flex; flex-wrap: wrap; align-items: center; gap: .9rem 1.1rem; }
@@ -1270,7 +1300,7 @@ body.in-story .hero .question { width: 100%; }
 </style>
 </head>
 <body>
-<div class="ap" id="ap" role="group" aria-label="Auto-play"><button type="button" class="ap-go" id="apGo" aria-keyshortcuts="P" aria-label="Start auto-play"><svg class="i-play" viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M4 2.5v11l9-5.5z"/></svg><svg class="i-pause" viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M4 2.5h3v11H4zM9 2.5h3v11H9z"/></svg><span class="ap-l" id="apL">Auto-play</span></button><button type="button" class="ap-len" id="apLen" aria-label="Change length">5 min</button><button type="button" class="ap-mode" id="apMode" aria-pressed="false" aria-keyshortcuts="V" title="Presentation mode: a shorter route through the story (V)">Presentation</button></div>
+<div class="ap" id="ap" role="group" aria-label="Auto-play"><button type="button" class="ap-go" id="apGo" aria-keyshortcuts="P" aria-label="Start auto-play"><svg class="i-play" viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M4 2.5v11l9-5.5z"/></svg><svg class="i-pause" viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M4 2.5h3v11H4zM9 2.5h3v11H9z"/></svg><span class="ap-l" id="apL">Auto-play</span></button><button type="button" class="ap-mode" id="apMode" aria-pressed="false" aria-keyshortcuts="V" title="Presentation mode: a shorter route through the story (V)" role="switch"><span class="sw"></span><span>Presentation mode</span></button></div>
 <div class="mnav" id="mnav"><button type="button" id="mPrev" aria-label="Previous step"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3 5 8l5 5"/></svg></button><button type="button" id="mNext" aria-label="Next step"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg></button></div>
 <div id="pv" role="dialog" aria-modal="true" aria-label="INQUEST prototype"><div class="pv-bar"><span></span><button class="pv-x" type="button" id="pv-x">Close</button></div><div class="pv-st" id="pv-st"></div></div>
 <div id="home">
@@ -2112,11 +2142,18 @@ body.in-story .hero .question { width: 100%; }
     </div>
 
     <div class="wf-chap">
-      <div class="wf-text">
-        <p class="ce wf-eye"><b>Chapter 08</b> &middot; Wireframes</p>
-        <h2>From the whiteboard to the screens</h2>
-        <p>I went to the whiteboard to sketch out my ideas and perfect my flow, adding features that serve my pain points and research question until I achieved one cohesive flow.</p>
-        <p>Originally I envisioned this as a simple feature within GitHub. But after critique, I knew I could push this further.</p>
+      <div class="wf-text" id="wfText">
+        <div class="wf-orig">
+          <p class="ce wf-eye"><b>Chapter 08</b> &middot; Wireframes</p>
+          <h2>From the whiteboard to the screens</h2>
+          <p>I went to the whiteboard to sketch out my ideas and perfect my flow, adding features that serve my pain points and research question until I achieved one cohesive flow.</p>
+          <p>Originally I envisioned this as a simple feature within GitHub. But after critique, I knew I could push this further.</p>
+        </div>
+        <div class="wf-final" hidden>
+          <h2>Final design</h2>
+          <p>My design visualizes deviations through a node system that allows you to compare the agent&rsquo;s actions against the spec, and push reviews all in one platform.</p>
+          <div class="wf-proto" id="wfProto"></div>
+        </div>
       </div>
       <section class="step wf-sp" data-scene="wire" data-chip="Whiteboard and sketches" data-set="wb-problems,wb-speccheck,wb-shell,paper,digi-sketch"><p class="eyebrow vh"><b>Chapter 08</b> &middot; Wireframes</p></section>
       <section class="step wf-sp" data-scene="wire" data-chip="Concept v1" data-set="v1-deviations,v1-header"></section>
@@ -2461,7 +2498,17 @@ body.in-story .hero .question { width: 100%; }
     }, wfImg.getAttribute('src') ? 180 : 0);
     [].forEach.call(wfStrip.children, function (b) { b.setAttribute('aria-selected', b.dataset.k === key ? 'true' : 'false'); });
   }
+  var wfTx = document.getElementById('wfText');
+  if (wfTx) {
+    var ep = document.querySelector('.end .end-proto'), pw = document.getElementById('wfProto');
+    if (ep && pw && !pw.firstChild) { pw.appendChild(ep.cloneNode(true)); }
+  }
+  function wfFinal(on) {
+    if (!wfTx || wfTx.classList.contains('is-final') === on) { return; }
+    wfTx.classList.toggle('is-final', on); wfTx.querySelector('.wf-final').hidden = !on;
+  }
   function wfFocus(step) {
+    wfFinal(step.dataset.chip === 'Final design');
     var set = (step.dataset.set || '').split(',').filter(Boolean);
     if (!set.length || !wfImg) { return; }
     var sk = set.join(',');
@@ -2823,6 +2870,10 @@ body.in-story .hero .question { width: 100%; }
       return;
     }
     // map: every kept segment sits on its own dot inside the map's regions; cut ones drop away
+    if (!Object.keys(dotsBy).some(function (k) { return dotsBy[k].length; })) {
+      var gd0 = document.getElementById('gdots'); if (gd0) { gd0.innerHTML = ''; } dotsBy = {};
+      try { makeDots(); } catch (e) {}
+    }
     var ctm = fmap.getScreenCTM(), dsc = ctm ? ctm.a : 0.2;
     var dia = Math.max(9, dsc * 44 * 1.35), used = {};
     chips.forEach(function (c) {
@@ -2831,7 +2882,7 @@ body.in-story .hero .question { width: 100%; }
       var k = used[t] = (used[t] || 0), list = dotsBy[t] || [];
       used[t]++;
       var d = list[k % Math.max(1, list.length)];
-      if (!d) { return; }
+      if (!d) { c.classList.remove('vis'); return; }
       var a = svgPt(+d.getAttribute('cx'), +d.getAttribute('cy'), sr);
       place(c, a.x - dia / 2, a.y - dia / 2, dia, dia);
       c.style.transitionDelay = reduce.matches ? '0s' : ((k % 12) * 0.03).toFixed(2) + 's';
@@ -3387,7 +3438,7 @@ body.in-story .hero .question { width: 100%; }
 <script>
 /* auto-play: steps through the whole story on a timer (default about 5 minutes) */
 (function () {
-  var ap = document.getElementById('ap'), go = document.getElementById('apGo'), lab = document.getElementById('apL'), lenB = document.getElementById('apLen');
+  var ap = document.getElementById('ap'), go = document.getElementById('apGo'), lab = document.getElementById('apL'), lenB = document.getElementById('apLen') || document.createElement('button');
   if (!ap) { return; }
   var LENS = [3, 5, 7, 10], li = 1, playing = false, list = [], dw = [], idx = 0, t0 = 0, timer = 0, tick = 0;
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -3406,7 +3457,7 @@ body.in-story .hero .question { width: 100%; }
   window.__pres = function (el) { return !presOn || weightOf(el) > 0; };
   function setPres(v) {
     presOn = v; try { localStorage.setItem('inqPres', v ? '1' : '0'); } catch (e) { /* ignore */ }
-    modeB.setAttribute('aria-pressed', v ? 'true' : 'false'); modeB.textContent = v ? 'Presentation' : 'Full story';
+    modeB.setAttribute('aria-pressed', v ? 'true' : 'false'); modeB.setAttribute('aria-checked', v ? 'true' : 'false');
     document.body.classList.toggle('pres-on', v);
     var hp = document.getElementById('hxPres'); if (hp) { hp.setAttribute('aria-pressed', v ? 'true' : 'false'); document.getElementById('hxPresSt').textContent = v ? 'On' : 'Off'; }
     applyPT(); window.dispatchEvent(new Event('resize'));
@@ -3428,23 +3479,10 @@ body.in-story .hero .question { width: 100%; }
       });
     });
   }
-  /* long jumps across skipped sections are a quick fade and cut, not a fast scroll through everything in between */
-  var veil = document.createElement('div'); veil.setAttribute('aria-hidden', 'true');
-  veil.style.cssText = 'position:fixed;inset:0;z-index:35;background:#292729;opacity:0;pointer-events:none;transition:opacity .22s ease';
-  document.body.appendChild(veil);
+  /* presentation mode: every move is an instant cut, no fades and no scrolling in between */
   window.__presGo = function (el) {
     if (!presOn) { return false; }
-    var all = [].slice.call(document.querySelectorAll('.hero, .fs[data-ch], .step[data-ch]')).filter(function (e) { return e.getBoundingClientRect().height > 0; }),
-      mid = window.innerHeight / 2, cur = 0, bd = 1e9, ti = all.indexOf(el);
-    all.forEach(function (e, i) { var q = e.getBoundingClientRect(), x = Math.abs((q.top + q.bottom) / 2 - mid); if (x < bd) { bd = x; cur = i; } });
-    var lo = Math.min(cur, ti), hi = Math.max(cur, ti), skipped = false;
-    for (var i = lo + 1; i < hi; i++) { if (!window.__pres(all[i])) { skipped = true; break; } }
-    if (!skipped) { return false; }
-    veil.style.opacity = '1';
-    setTimeout(function () {
-      el.scrollIntoView({ behavior: 'instant', block: 'center' });
-      setTimeout(function () { el.scrollIntoView({ behavior: 'instant', block: 'center' }); veil.style.opacity = '0'; }, 260);
-    }, 230);
+    el.scrollIntoView({ behavior: 'instant', block: 'center' });
     return true;
   };
   function steps() { var L = [].slice.call(document.querySelectorAll('.fs, .step')).filter(function (el) { return el.dataset.ch && el.getBoundingClientRect().height > 0 && window.__pres(el); }), h = document.querySelector('.hero'); if (h) { L.unshift(h); } return L; }
