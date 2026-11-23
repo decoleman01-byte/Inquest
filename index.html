@@ -890,8 +890,11 @@ body.in-story .appbar .share { background: none; }
 .fcap p.sm { font-size: .9rem; color: #b9b5c4; }
 .fcap ul { margin: 0 0 .8rem; padding-left: 1.1rem; display: grid; gap: .15rem; font: 400 1rem/1.4 var(--ui); }
 .fcap .snip { padding: .7rem .9rem; border-radius: 8px; background: rgba(41,38,41,.8); box-shadow: inset 0 0 0 1px #484349; max-width: 26rem; }
-.fstage[data-phase="review"] .fcap, .fstage[data-phase="map"] .fcap { max-width: 21rem; }
+.fstage[data-phase="map"] .fcap { max-width: 21rem; }
+.fstage[data-phase="review"] .fcap { max-width: 44rem; }
+.fstage[data-phase="review"] .fcap h2 { white-space: nowrap; }
 .fstage[data-phase="review"] .fcap p, .fstage[data-phase="map"] .fcap p { font-size: 1.05rem; }
+.fstage[data-phase="review"] .fcap p { line-height: 1.7; max-width: 42rem; }
 
 /* people */
 .prow2 { position: absolute; left: 3.4vw; right: 3.4vw; bottom: 1.5rem; display: grid; grid-template-columns: repeat(6,1fr); align-items: end; transition: opacity .5s, transform .7s cubic-bezier(.3,.7,.2,1); }
@@ -1278,7 +1281,7 @@ body.in-story .hero .question { width: 100%; }
 .ap .ap-mode[aria-pressed="true"] { color: #fff; box-shadow: 0 0 0 1.5px #01a2ff, 0 6px 16px rgba(0,0,0,.3); }
 .ap.on .ap-len { display: none; }
 body.pres-on, html:has(body.pres-on) { scroll-behavior: auto !important; }
-body.pres-on *, body.pres-on *::before, body.pres-on *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+body.pres-on *:not(.qc):not(.qc *), body.pres-on *::before, body.pres-on *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 .ap .ap-mode { display: inline-flex; align-items: center; gap: .55rem; }
 .ap .ap-mode .sw { position: relative; width: 28px; height: 16px; border-radius: 999px; background: #5a555c; transition: background .2s; flex: none; }
 .ap .ap-mode .sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: #fff; transition: transform .2s; }
