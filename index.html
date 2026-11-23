@@ -2112,6 +2112,7 @@ body.in-story .hero .question { width: 100%; }
       <section class="step wf-sp" data-scene="wire" data-chip="Low-fi v5" data-set="lf-inbox,lf-specpage,lf-records,lf-speccheck,lf-code,lf-sendback,lf-answer,lf-signoff"></section>
       <section class="step wf-sp" data-scene="wire" data-chip="Hi-fi exploration A" data-set="a-speccheck,a-home,a-inbox,a-specs,a-records"></section>
       <section class="step wf-sp" data-scene="wire" data-chip="Hi-fi exploration B" data-set="b-review,b-home,b-specs,b-records"></section>
+      <section class="step wf-sp" data-scene="wire" data-chip="Final design" data-set="f-home,f-review,f-node,f-code,f-answer,f-specs,f-records"></section>
     </div>
 
   </div>
@@ -2426,7 +2427,14 @@ body.in-story .hero .question { width: 100%; }
     'b-review': ['Hi-fi B', 'Review'],
     'b-home': ['Hi-fi B', 'Home'],
     'b-specs': ['Hi-fi B', 'Specs'],
-    'b-records': ['Hi-fi B', 'Records']
+    'b-records': ['Hi-fi B', 'Records'],
+    'f-home': ['Final design', 'Home: what needs you today, with the deviations up front'],
+    'f-review': ['Final design', 'Review: the AI\u2019s changes against the spec, with a flagged item open'],
+    'f-node': ['Final design', 'Review: agent actions beside the spec requirements'],
+    'f-code': ['Final design', 'Code change: the AI\u2019s edit, why it was flagged, and the spec line it breaks'],
+    'f-answer': ['Final design', 'What changed and why? The answer you can give when asked'],
+    'f-specs': ['Final design', 'Specs: requirements, stale sections and the reviews that use them'],
+    'f-records': ['Final design', 'Records: every sign-off, with what the review flagged']
   };
   var wfImg = document.getElementById('wfImg'), wfStrip = document.getElementById('wfStrip'), wfSetKey = '', wfCur = '';
   var wfLb = document.getElementById('wfLb'), wfLbImg = document.getElementById('wfLbImg');
@@ -3373,7 +3381,7 @@ body.in-story .hero .question { width: 100%; }
   var LENS = [3, 5, 7, 10], li = 1, playing = false, list = [], dw = [], idx = 0, t0 = 0, timer = 0, tick = 0;
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
   /* presentation mode: a shorter route (chapter -> {position within chapter: relative time}) */
-  var PW = { '01': { 0: 10, 1: 9, 6: 9, 9: 9 }, '02': { 2: 12 }, '03': { 0: 10, 5: 12, 6: 10 }, '04': { 0: 14 }, '05': { 0: 8, 1: 10, 2: 8, 3: 12, 4: 10 }, '06': { 0: 14 }, '07': { 0: 14 }, '08': { 0: 14, 1: 12, 2: 12, 3: 12, 4: 12 } };
+  var PW = { '01': { 0: 10, 1: 9, 6: 9, 9: 9 }, '02': { 2: 12 }, '03': { 0: 10, 5: 12, 6: 10 }, '04': { 0: 14 }, '05': { 0: 8, 1: 10, 2: 8, 3: 12, 4: 10 }, '06': { 0: 14 }, '07': { 0: 14 }, '08': { 0: 12, 1: 10, 2: 10, 3: 10, 4: 10, 5: 24 } };
   var presOn = false, wmap = null, modeB = document.getElementById('apMode');
   try { presOn = /[?&]present\b/.test(location.search) || localStorage.getItem('inqPres') === '1'; } catch (e) { presOn = /[?&]present\b/.test(location.search); }
   function weightOf(el) {
