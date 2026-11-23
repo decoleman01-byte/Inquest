@@ -1193,9 +1193,43 @@ body.in-story .keyhint { display: flex; }
   .pcol .pid, .pcol .pr, .pcol span { font-size: .72rem; }
   .fmap { top: 5.2rem; bottom: auto; left: 50%; width: min(96vw, calc(46svh * 1.158)); }
 }
+
+/* phone: quotes in the caption + simple pile cards for chapter 02 */
+.mpiles { display: none; }
+@media (max-width: 899px) {
+  .fcap blockquote { margin: .1rem 0 0; font: 600 1.2rem/1.3 var(--sans); color: #fff; }
+  .fcap .ask { color: #b3b3b3; font-size: .85rem; margin: 0 0 .5rem; }
+  .fcap .ce { margin: 0 0 .35rem; font-size: .78rem; color: #b3b3b3; } .fcap .ce b { color: #fff; }
+  .mpiles { position: absolute; left: 4vw; right: 4vw; top: 5.2rem; bottom: .3rem; display: none; grid-template-columns: 1fr 1fr; grid-auto-rows: 1fr; gap: 5px; opacity: 0; transition: opacity .4s ease; pointer-events: none; }
+  .fstage[data-phase="code"] .mpiles, .fstage[data-phase="themes"] .mpiles, .fstage[data-phase="review"] .mpiles { display: grid; opacity: 1; }
+  .mpc { position: relative; display: grid; grid-template-columns: 1fr auto; align-content: center; column-gap: .4rem; padding: 0 .55rem; border-radius: 7px; background: #3b373c; box-shadow: inset 0 0 0 1px #484349; min-height: 0; overflow: hidden; }
+  .mpc b { font: 600 .68rem/1.15 var(--sans); color: #fff; }
+  .mpc .n { font: 600 .68rem/1.15 var(--sans); color: #b3b3b3; grid-row: 1; grid-column: 2; }
+  .mpc em { grid-column: 1 / -1; font: 500 .62rem/1.2 var(--sans); font-style: normal; color: #b3b3b3; display: none; }
+  .fstage[data-phase="themes"] .mpc, .fstage[data-phase="review"] .mpc { box-shadow: inset 3px 0 0 var(--tc), inset 0 0 0 1px #484349; }
+  .fstage[data-phase="themes"] .mpc em, .fstage[data-phase="review"] .mpc em { display: block; color: var(--tc); }
+  .fstage[data-phase="review"] .mpc.is-cut { opacity: .35; }
+}
+
+/* auto-play control */
+.ap { position: fixed; z-index: 40; left: 1rem; bottom: 1rem; display: none; align-items: center; gap: .4rem; font: 500 .8125rem/1 var(--sans); }
+body.in-story .ap { display: flex; }
+.ap button { font: inherit; color: #fff; background: rgba(33,31,34,.9); border: 0; border-radius: 999px; padding: .6rem .9rem; box-shadow: 0 0 0 1px #484349, 0 6px 16px rgba(0,0,0,.3); cursor: pointer; display: inline-flex; align-items: center; gap: .5rem; }
+.ap button:hover { background: #3b373c; } .ap button:focus-visible { outline: 2px solid #01a2ff; outline-offset: 2px; }
+.ap .ap-len { color: #b3b3b3; padding: .6rem .75rem; } .ap .ap-len[hidden] { display: none; }
+.ap .i-pause { display: none; } .ap.on .i-pause { display: block; } .ap.on .i-play { display: none; }
+.ap.on .ap-go { box-shadow: 0 0 0 1.5px #01a2ff, 0 6px 16px rgba(0,0,0,.3); }
+@media (max-width: 899px) {
+  .ap { left: auto; right: .6rem; bottom: calc(var(--sheet, 40svh) + .5rem); transition: bottom .3s ease; }
+  .ap button { padding: .5rem .7rem; font-size: .75rem; }
+  .stage { height: calc(100svh - 4.6rem - var(--sheet, 40svh) - .6rem); min-height: 11rem; transition: height .3s ease; }
+  .fmap { width: min(96vw, calc((100svh - 5.2rem - var(--sheet, 40svh) - .6rem) * 1.158)); }
+  .mpiles { bottom: calc(var(--sheet, 40svh) + .6rem); }
+}
 </style>
 </head>
 <body>
+<div class="ap" id="ap" role="group" aria-label="Auto-play"><button type="button" class="ap-go" id="apGo" aria-keyshortcuts="P" aria-label="Start auto-play"><svg class="i-play" viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M4 2.5v11l9-5.5z"/></svg><svg class="i-pause" viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M4 2.5h3v11H4zM9 2.5h3v11H9z"/></svg><span class="ap-l" id="apL">Auto-play</span></button><button type="button" class="ap-len" id="apLen" aria-label="Change length">5 min</button></div>
 <div id="pv" role="dialog" aria-modal="true" aria-label="INQUEST prototype"><div class="pv-bar"><span></span><button class="pv-x" type="button" id="pv-x">Close</button></div><div class="pv-st" id="pv-st"></div></div>
 <div id="home">
   <div class="hgrid hx">
@@ -1250,6 +1284,7 @@ body.in-story .keyhint { display: flex; }
   <span><span class="kbd">M</span> chapter menu</span>
   <span><span class="kbd">T</span> progress bar</span>
   <span><span class="kbd">O</span> open prototype</span>
+  <span><span class="kbd">P</span> auto-play</span>
 </div>
 <header class="hero">
   <div class="question">
@@ -2641,6 +2676,17 @@ body.in-story .keyhint { display: flex; }
       h.children[2].textContent = p[1] === 'cut' ? 'cut' : '\u2192 ' + p[1];
       wk.appendChild(h);
     });
+    var mp = document.createElement('div'); mp.className = 'mpiles'; mp.id = 'mpiles';
+    var TC = { Verification: '#e8e1d0', Intent: '#34c0c4', Trust: '#6b79ff', Authorship: '#e0343a', 'Time shifted, not saved': '#9b9ea6' };
+    PILES.forEach(function (p, k) {
+      var n = SEGS.filter(function (r) { return r[0] === k; }).length, c = document.createElement('div');
+      c.className = 'mpc' + (p[1] === 'cut' ? ' is-cut' : ''); c.style.setProperty('--tc', TC[p[1]] || '#777');
+      c.innerHTML = '<b></b><span class="n"></span><em></em>';
+      c.children[0].textContent = p[0]; c.children[1].textContent = n;
+      c.children[2].textContent = p[1] === 'cut' ? 'cut' : '\u2192 ' + p[1].replace('Time shifted, not saved', 'Background');
+      mp.appendChild(c);
+    });
+    wk.appendChild(mp);
   })();
   var chips = [].slice.call(chipsEl.children);
   var colhs = [].slice.call(work.querySelectorAll('.colh'));
@@ -2818,7 +2864,7 @@ body.in-story .keyhint { display: flex; }
   }
   function fit() {
     stage.classList.remove('tight', 'tighter', 'tightest');
-    if (phase !== 'people') { return; }
+    if (phase !== 'people' || mobile.matches) { return; }
     var now = prow.querySelector('.pb.now'); if (!now) { return; }
     var all = [].slice.call(prow.querySelectorAll('.pb.now,.pb.past'));
     function over() { var cb = cap.getBoundingClientRect().bottom + 12; return Math.min.apply(null, all.map(function (b) { return b.getBoundingClientRect().top; })) < cb; }
@@ -2850,7 +2896,8 @@ body.in-story .keyhint { display: flex; }
     pinned = '';
     phase = p; stage.dataset.phase = p;
     hovered = '';
-    setCap(capFor(i));
+    var fm = el.querySelector('.fsm');
+    setCap(mobile.matches && fm ? fm.innerHTML : capFor(i));
     bubbles(i); applyLit(el);
     fit();
     layout();
@@ -3277,6 +3324,85 @@ body.in-story .keyhint { display: flex; }
   }
   function q() { if (!raf) { raf = requestAnimationFrame(upd); } }
   window.addEventListener('scroll', q, { passive: true }); window.addEventListener('resize', q); q();
+})();
+</script>
+<script>
+/* auto-play: steps through the whole story on a timer (default about 5 minutes) */
+(function () {
+  var ap = document.getElementById('ap'), go = document.getElementById('apGo'), lab = document.getElementById('apL'), lenB = document.getElementById('apLen');
+  if (!ap) { return; }
+  var LENS = [3, 5, 7, 10], li = 1, playing = false, list = [], dw = [], idx = 0, t0 = 0, timer = 0, tick = 0;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  function steps() { return [].slice.call(document.querySelectorAll('.fs, .step')).filter(function (el) { return el.dataset.ch && el.getBoundingClientRect().height > 0; }); }
+  function chars(el) {
+    var n = 0;
+    if (el.classList.contains('tt-sp')) { var pn = el.parentNode.querySelector('.tt-pane[data-i="' + el.dataset.tt + '"]'); n = pn ? pn.textContent.trim().length : 160; }
+    else if (el.classList.contains('wf-sp')) { n = 150; }
+    else { n = el.textContent.trim().length; }
+    return Math.min(n, 420);
+  }
+  function plan() {
+    list = steps(); var w = list.map(function (el) { return 70 + chars(el); }), tot = w.reduce(function (a, b) { return a + b; }, 0), T = LENS[li] * 60;
+    dw = w.map(function (x) { return Math.max(3, x / tot * T); });
+    var s2 = dw.reduce(function (a, b) { return a + b; }, 0); dw = dw.map(function (x) { return Math.max(3, x * T / s2); });
+  }
+  function nearest() {
+    var mid = window.innerHeight / 2, best = 0, bd = 1e9;
+    list.forEach(function (el, i) { var r = el.getBoundingClientRect(), d = Math.abs((r.top + r.bottom) / 2 - mid); if (d < bd) { bd = d; best = i; } });
+    return best;
+  }
+  function fmt(sec) { sec = Math.max(0, Math.round(sec)); return Math.floor(sec / 60) + ':' + ('0' + (sec % 60)).slice(-2); }
+  function remain() { var r = 0; for (var i = idx; i < dw.length; i++) { r += dw[i]; } return r - (Date.now() - t0) / 1000; }
+  function paint() {
+    ap.classList.toggle('on', playing);
+    go.setAttribute('aria-label', playing ? 'Pause auto-play' : 'Start auto-play');
+    lab.textContent = playing ? fmt(remain()) + ' left' : 'Auto-play';
+    lenB.hidden = playing; lenB.textContent = LENS[li] + ' min';
+  }
+  function show() {
+    if (!playing) { return; }
+    var el = list[idx]; if (!el) { stop(true); return; }
+    el.scrollIntoView({ behavior: reduce.matches ? 'auto' : 'smooth', block: 'center' });
+    t0 = Date.now(); paint();
+    var sc = document.querySelector('.stage .scene.is-on'), dur = dw[idx] * 700;
+    if (sc) { sc.scrollTop = 0; setTimeout(function () { if (!playing) { return; } var max = sc.scrollHeight - sc.clientHeight; if (max < 8) { return; } var s0 = Date.now(); (function f() { if (!playing) { return; } var k = Math.min(1, (Date.now() - s0) / dur); sc.scrollTop = max * k; if (k < 1) { requestAnimationFrame(f); } })(); }, 900); }
+    timer = setTimeout(function () { idx++; if (idx >= list.length) { stop(true); } else { show(); } }, dw[idx] * 1000);
+  }
+  function start() {
+    plan(); if (!list.length) { return; }
+    idx = window.scrollY < 40 ? 0 : nearest();
+    if (idx >= list.length - 1 && window.scrollY > 40) { idx = 0; }
+    playing = true; clearInterval(tick); tick = setInterval(paint, 500); show();
+  }
+  function stop(done) { playing = false; clearTimeout(timer); clearInterval(tick); paint(); if (done) { lab.textContent = 'Replay'; } }
+  go.addEventListener('click', function () { if (playing) { stop(); } else { start(); } });
+  lenB.addEventListener('click', function () { li = (li + 1) % LENS.length; paint(); });
+  function interrupt(e) { if (playing && !(e.target && e.target.closest && e.target.closest('#ap'))) { stop(); } }
+  window.addEventListener('wheel', interrupt, { passive: true });
+  window.addEventListener('touchstart', interrupt, { passive: true });
+  document.addEventListener('keydown', function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) { return; }
+    var t = e.target; if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) { return; }
+    if (!document.body.classList.contains('in-story')) { return; }
+    var pv = document.getElementById('pv'); if (pv && pv.classList.contains('on')) { return; }
+    if (e.key === 'p' || e.key === 'P') { e.preventDefault(); if (playing) { stop(); } else { start(); } return; }
+    if (playing && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown', 'Home', 'End', ' ', 'Escape'].indexOf(e.key) > -1) { stop(); }
+  });
+  paint();
+  /* phones: report the live text sheet's height so the graphics can size to the space above it */
+  var mq = window.matchMedia('(max-width: 899px)'), root = document.documentElement;
+  setInterval(function () {
+    if (!mq.matches) { root.style.removeProperty('--sheet'); return; }
+    var fl = document.getElementById('fstage'), fr = fl && fl.getBoundingClientRect(), el = null;
+    if (fr && fr.top < window.innerHeight * .5 && fr.bottom > window.innerHeight * .5) { el = document.getElementById('fcap'); } else { el = document.querySelector('.tt-text.is-live, .wf-text.is-live'); }
+    var h = el ? Math.ceil(el.getBoundingClientRect().height / 8) * 8 : 0;
+    if (h) { root.style.setProperty('--sheet', h + 'px'); }
+    var st = document.querySelector('.stage'), sc = st && st.querySelector('.scene.is-on'), k = sc && sc.firstElementChild;
+    if (k && /^(turn|journey)$/.test(sc.dataset.scene)) {
+      var z = parseFloat(k.style.zoom) || 1, need = k.scrollHeight / z, avail = sc.clientHeight - 20, nz = Math.max(.72, Math.min(1, avail / need));
+      if (Math.abs(nz - z) > .03) { k.style.zoom = nz.toFixed(2); }
+    }
+  }, 150);
 })();
 </script>
 </body>
