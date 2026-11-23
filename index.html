@@ -3094,15 +3094,15 @@ html:not(.js) .fsm { display: block; }
   var head = stage.querySelector('.stage-head'), FIT = { turn: 1, journey: 1, comp: 1 }, raf = 0;
   function fit() {
     raf = 0;
-    if (window.innerWidth < 900) { stage.style.height = ''; stage.style.top = ''; return; }
+    if (window.innerWidth < 900) { stage.style.height = ''; stage.style.top = ''; stage.style.minHeight = ''; return; }
     var sc = stage.querySelector('.scene.is-on'), kid = sc && sc.firstElementChild;
-    if (!sc || !FIT[sc.dataset.scene] || !kid) { stage.style.height = ''; stage.style.top = ''; return; }
+    if (!sc || !FIT[sc.dataset.scene] || !kid) { stage.style.height = ''; stage.style.top = ''; stage.style.minHeight = ''; return; }
     var prev = stage.style.height; stage.style.transition = 'none'; stage.style.height = ''; stage.style.top = '';
     var avail = stage.offsetHeight; stage.style.height = prev; void stage.offsetHeight; stage.style.transition = '';
     var cs = getComputedStyle(sc), pad = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
     var want = Math.round((head ? head.offsetHeight : 0) + pad + kid.scrollHeight + 36);
-    var h = Math.max(Math.min(want, avail), Math.min(avail, 300));
-    stage.style.height = h + 'px'; stage.style.top = 'calc(4.7rem + ' + Math.max(0, Math.round((avail - h) / 2)) + 'px)';
+    var h = Math.max(Math.min(want, avail), Math.min(avail, 260));
+    stage.style.minHeight = '0'; stage.style.height = h + 'px'; stage.style.top = 'calc(4.7rem + ' + Math.max(0, Math.round((avail - h) / 2)) + 'px)';
   }
   function q() { if (!raf) { raf = requestAnimationFrame(fit); } }
   new MutationObserver(q).observe(stage, { subtree: true, attributes: true, attributeFilter: ['class', 'data-phase', 'hidden'] });
