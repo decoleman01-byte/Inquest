@@ -1135,6 +1135,17 @@ html:not(.js) .fsm { display: block; }
 @media (prefers-reduced-motion: reduce) { .tt-chap .tt-text, .wf-chap .wf-text, .tt-chap .tt-text.is-live, .wf-chap .wf-text.is-live { transition: none; } }
 .chbtn:focus-visible, .cta:focus-visible, .track .tn:focus-visible, .chmenu button:focus-visible { outline: 2px solid #01a2ff; outline-offset: 3px; }
 .chmenu button:focus-visible { background: rgba(1,162,255,.16); outline-offset: -2px; }
+
+/* hero is the research question; keyboard help sits bottom right */
+.hero { padding-top: 7rem; }
+.hero .question { border-top: 0; padding-top: 0; grid-template-columns: 1fr; }
+body.in-story .hero .question p.q { font-size: clamp(2.2rem, 5.2vw, 4.2rem); line-height: 1.06; letter-spacing: -.04em; max-width: 20ch; }
+.hero .question .context { max-width: 38rem; margin: 1.5rem 0 0; color: var(--muted); font-size: 1.125rem; }
+.keyhint { position: fixed; right: 1.25rem; bottom: 1rem; z-index: 40; display: none; gap: .9rem; align-items: center; padding: .5rem .8rem; border-radius: 10px; background: rgba(33,31,34,.85); box-shadow: inset 0 0 0 1px #484349; backdrop-filter: blur(6px); font: 400 .75rem/1 var(--sans); color: #b3b3b3; }
+body.in-story .keyhint { display: flex; }
+.keyhint > span { display: inline-flex; gap: .25rem; align-items: center; white-space: nowrap; }
+.keyhint > span > .kbd { margin-right: .1rem; color: #fff; background: #3b373c; }
+@media (max-width: 899px), (hover: none) { body.in-story .keyhint { display: none; } }
 </style>
 </head>
 <body>
@@ -1187,12 +1198,13 @@ html:not(.js) .fsm { display: block; }
   <div class="progress" id="progress" aria-hidden="true" hidden></div>
 </header>
 
+<div class="keyhint" aria-label="Keyboard shortcuts">
+  <span><span class="kbd">&larr;</span><span class="kbd">&uarr;</span><span class="kbd">&darr;</span><span class="kbd">&rarr;</span> step through</span>
+  <span><span class="kbd">M</span> chapter menu</span>
+  <span><span class="kbd">T</span> progress bar</span>
+  <span><span class="kbd">O</span> open prototype</span>
+</div>
 <header class="hero">
-  <div>
-    <p class="eyebrow">Research story from six interviews</p>
-    <h1>They trust the AI. They <em>can&rsquo;t prove</em> what it did.</h1>
-    <p class="lede">A research story from six interviews with people who build, test and design software alongside AI tools. Scroll slowly. The evidence on the right will rearrange itself as the story moves, and most of it can be clicked. Press <span class="kbd">↓</span> and <span class="kbd">↑</span> to step through, <span class="kbd">M</span> for the chapter menu, <span class="kbd">T</span> for the progress bar and <span class="kbd">O</span> to open the prototype.</p>
-  </div>
   <div class="question">
     <p class="eyebrow">Research question</p>
     <div>
